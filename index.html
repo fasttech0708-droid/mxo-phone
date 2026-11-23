@@ -6,50 +6,76 @@
 <title>MXO утас</title>
 <style>
 :root{--bg:#0f1115;--card:#181b22;--ln:#272b35;--tx:#e8eaf0;--mu:#8b93a7;--ac:#5b8cff;--ok:#3ecf8e;--er:#ff6b6b;--wr:#f5b84c}
-*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 #app{display:flex;flex-direction:column;height:100%;height:100dvh;max-width:640px;margin:0 auto}
-header{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;border-bottom:1px solid var(--ln)}
+header{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 8px;border-bottom:1px solid var(--ln)}
 header b{font-size:17px}header .sp{flex:1}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--mu);flex:none}.dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-#st{font-size:13px;color:var(--mu)}
-button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:9px 14px;cursor:pointer}
-button.pri{background:var(--ac);border-color:var(--ac);color:#fff}button:disabled{opacity:.5}
+#st{font-size:12.5px;color:var(--mu);padding:5px 14px 7px;border-bottom:1px solid var(--ln);min-height:30px;word-break:break-word}
+button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;cursor:pointer}
+button:active{filter:brightness(1.25)}button.pri{background:var(--ac);border-color:var(--ac);color:#fff}button.dng{border-color:#6b2c2c;color:var(--er)}button:disabled{opacity:.45}
+.tabs{display:flex;border-bottom:1px solid var(--ln)}.tabs button{flex:1;border:0;border-radius:0;background:none;padding:11px;color:var(--mu)}.tabs button.on{color:var(--tx);box-shadow:inset 0 -2px 0 var(--ac)}
+.pane{flex:1;min-height:0;display:none;flex-direction:column}.pane.on{display:flex}
+#ctl{overflow:auto;padding:12px 12px 20px}
+.sec{margin:0 0 14px}.sec h3{margin:0 0 7px;font-size:13px;color:var(--mu);font-weight:600;letter-spacing:.02em}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>button{flex:1;min-width:30%}
+.row.two>button{min-width:45%}
+select,input,textarea{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;outline:none}
+select{flex:1;min-width:0}input,textarea{width:100%}input:focus,textarea:focus,select:focus{border-color:var(--ac)}
+textarea{resize:none;max-height:120px}
+#log{margin-top:4px}.lg{border:1px solid var(--ln);border-radius:12px;padding:8px 11px;margin-bottom:7px;background:var(--card);word-break:break-word;font-size:14px}
+.lg small{display:block;color:var(--mu);font-size:12px;margin-top:2px}.lg.err{border-color:var(--er)}.lg.run{border-color:var(--wr)}.lg.done{border-color:#24503d}
 #msgs{flex:1;overflow:auto;padding:12px 12px 6px;display:flex;flex-direction:column;gap:10px}
 .me{align-self:flex-end;background:var(--ac);color:#fff;border-radius:16px 16px 4px 16px;padding:9px 13px;max-width:88%;word-break:break-word;white-space:pre-wrap}
 .bot{align-self:flex-start;background:var(--card);border:1px solid var(--ln);border-radius:16px 16px 16px 4px;padding:9px 13px;max-width:92%;word-break:break-word;white-space:pre-wrap}
-.bot small{display:block;color:var(--mu);margin-top:4px;font-size:12px}
-.bot.err{border-color:var(--er)}.bot.run{border-color:var(--wr)}.bot.done{border-color:#24503d}
-.chips{display:flex;gap:8px;overflow:auto;padding:6px 12px}.chips button{white-space:nowrap;font-size:14px;padding:7px 12px}
+.bot small{display:block;color:var(--mu);margin-top:4px;font-size:12px}.bot.err{border-color:var(--er)}.bot.run{border-color:var(--wr)}.bot.done{border-color:#24503d}
 form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--ln)}
-textarea,input{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;width:100%;outline:none}
-textarea{resize:none;max-height:120px}textarea:focus,input:focus{border-color:var(--ac)}
 .center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:24px}
 .center h1{margin:0;font-size:22px}.center p{margin:0;color:var(--mu)}
-#code{text-transform:uppercase;letter-spacing:.25em;text-align:center;font-size:22px}
-#err{color:var(--er);min-height:1.4em}
+#code{text-transform:uppercase;letter-spacing:.25em;text-align:center;font-size:22px}#err{color:var(--er);min-height:1.4em}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222833;border:1px solid var(--ln);padding:9px 14px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}#toast.on{opacity:1}
 .hide{display:none!important}
 </style></head><body><div id="app">
 <div id="pair" class="center hide">
  <h1>MXO утас</h1>
- <p>Компьютер дээрээ MXO-г нээгээд <b>Утас холбох</b> товчийг дарна. Гарсан QR кодыг утасныхаа камераар уншуулна. QR уншуулах боломжгүй бол доор 8 тэмдэгтийн кодыг оруулна.</p>
+ <p>Компьютер дээрээ MXO-г нээгээд <b>📱 Утас</b> товчийг дарж QR үүсгэнэ. Утасныхаа камераар QR-г уншуулна. QR уншуулах боломжгүй бол доор 8 тэмдэгтийн кодыг оруулна.</p>
  <input id="code" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="XXXXXXXX">
  <button id="bPair" class="pri">Холбох</button><div id="err"></div>
 </div>
-<div id="main" class="hide" style="display:flex;flex-direction:column;flex:1;min-height:0">
- <header><span class="dot" id="dot"></span><b>MXO</b><span id="st">…</span><span class="sp"></span><button id="bOut" title="Салгах">⎋</button></header>
- <div id="msgs"></div>
- <div class="chips" id="chips"></div>
- <form id="f"><textarea id="q" rows="1" placeholder="Команд эсвэл видеоны линк…"></textarea><button class="pri" id="bSend">➤</button></form>
-</div></div>
+<div id="main" class="hide" style="flex-direction:column;flex:1;min-height:0">
+ <header><span class="dot" id="dot"></span><b>MXO</b><span class="sp"></span><button id="bOut" title="Салгах">⎋</button></header>
+ <div id="st">…</div>
+ <div class="tabs"><button id="t1" class="on">Удирдлага</button><button id="t2">AI чат</button></div>
+ <div class="pane on" id="p1"><div id="ctl">
+  <div class="sec"><h3>🔗 ВИДЕОНЫ ЛИНК (автомат: татах → орчуулах → хоолой → экспорт)</h3>
+   <div class="row"><input id="url" placeholder="https://youtu.be/…" style="flex:3;min-width:0"><button class="pri" id="bUrl" style="flex:1;min-width:90px">Эхлүүл</button></div></div>
+  <div class="sec"><h3>▶ АЛХМУУД (компьютер дээрх төсөл дээр)</h3>
+   <div class="row"><button data-a='{"a":"run","step":"tt"}'>Орчуулга</button><button data-a='{"a":"run","step":"gender"}'>Хүйс ялгах</button><button data-a='{"a":"run","step":"tts"}'>Хоолой үүсгэх</button></div></div>
+  <div class="sec"><h3>📤 ЭКСПОРТ</h3>
+   <div class="row"><button data-a='{"a":"export","sub":true,"voice":true}'>Хоолой + хадмал</button><button data-a='{"a":"export","sub":false,"voice":true}'>Зөвхөн хоолой</button><button data-a='{"a":"export","sub":true,"voice":false}'>Зөвхөн хадмал</button></div></div>
+  <div class="sec"><h3>⚡ БҮХ МӨРИЙН ХУРД</h3>
+   <div class="row"><button data-a='{"a":"auto_speed"}' style="flex:2">Автоматаар тааруул</button></div>
+   <div class="row" style="margin-top:8px"><select id="spd"></select><button id="bSpd" style="flex:none">Хэрэгжүүл</button></div></div>
+  <div class="sec"><h3>🎙 ХООЛОЙ, СЭТГЭЛ ХӨДЛӨЛ (бүх мөр)</h3>
+   <div class="row two"><button data-a='{"a":"gender_all","g":"male"}'>♂ Бүгдийг эр</button><button data-a='{"a":"gender_all","g":"female"}'>♀ Бүгдийг эм</button></div>
+   <div class="row" style="margin-top:8px"><select id="emo"><option value="neutral">Хэвийн</option><option value="happy">Баяртай</option><option value="angry">Ууртай</option><option value="sad">Гунигтай</option><option value="fear">Айсан</option><option value="surprise">Гайхсан</option><option value="shout">Хашгирсан</option><option value="whisper">Шивнэсэн</option></select><button id="bEmo" style="flex:none">Хэрэгжүүл</button></div></div>
+  <div class="sec"><div class="row two"><button data-a='{"a":"status"}'>ℹ Төлөв</button><button class="dng" data-a='{"a":"stop"}'>⏹ Зогсоох</button></div></div>
+  <div class="sec"><h3>ҮР ДҮН</h3><div id="log"></div></div>
+ </div></div>
+ <div class="pane" id="p2"><div id="msgs"></div>
+  <form id="f"><textarea id="q" rows="1" placeholder="AI туслахад бич… (Gemini ачаалалтай үед удааширч болно)"></textarea><button class="pri" id="bSend">➤</button></form>
+ </div>
+</div></div><div id="toast"></div>
 <script>
 const SB="https://bmwmdevitmefslizmsdo.supabase.co",KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtd21kZXZpdG1lZnNsaXptc2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NDUyODksImV4cCI6MjA5NzUyMTI4OX0.iGvU3vATdsXYFAHR2iqP3_dpFjqoqc1CzljhspxaccA",LS="mxo_phone_token";
 const $=id=>document.getElementById(id);
 const VID=/^(https?:\/\/)?([\w-]+\.)?(youtube\.com|youtu\.be|youtube-nocookie\.com|tiktok\.com|facebook\.com|fb\.watch|instagram\.com|twitter\.com|x\.com|vimeo\.com|dailymotion\.com|bilibili\.com)\//i;
 const ERR={invalid:"Код буруу эсвэл хугацаа дууссан. MXO дээр шинэ QR үүсгэнэ үү.",locked:"Хэт олон буруу оролдлого. 1 минут хүлээнэ үү.",license:"Лиценз хүчингүй байна.",auth:"Холболт дууссан. MXO дээр шинээр QR үүсгэнэ үү.",rate:"Хэт олон команд. Түр хүлээнэ үү.",queue:"Дараалал дүүрсэн, өмнөх ажил дуустал хүлээнэ үү.",body:"Текст хоосон эсвэл хэт урт байна."};
+let tT=0;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(tT);tT=setTimeout(()=>t.classList.remove("on"),2600);}
 async function rpc(fn,args){const r=await fetch(SB+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"},body:JSON.stringify(args)});if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}
 const tok=()=>{try{return localStorage.getItem(LS)||""}catch(e){return""}};
 const setTok=v=>{try{v?localStorage.setItem(LS,v):localStorage.removeItem(LS)}catch(e){}};
-function show(pair){$("pair").classList.toggle("hide",!pair);$("main").classList.toggle("hide",pair);}
+function show(pair){$("pair").classList.toggle("hide",!pair);$("main").classList.toggle("hide",pair);$("main").style.display=pair?"none":"flex";}
 async function claim(secret){
   $("err").textContent="";$("bPair").disabled=true;
   try{const r=await rpc("mxo_remote_pair_claim",{p_secret:secret});
@@ -60,49 +86,69 @@ async function claim(secret){
 }
 $("bPair").onclick=()=>{const c=$("code").value.trim();if(c.length>=6)claim(c);};
 $("bOut").onclick=()=>{if(confirm("Энэ утсыг салгах уу?")){setTok("");stop();show(true);}};
-let timer=null,busy=false,last="";
+function tab(n){$("t1").classList.toggle("on",n===1);$("t2").classList.toggle("on",n===2);$("p1").classList.toggle("on",n===1);$("p2").classList.toggle("on",n===2);}
+$("t1").onclick=()=>tab(1);$("t2").onclick=()=>tab(2);
+// хурдны сонголт
+for(let p=-40;p<=40;p+=5){const o=document.createElement("option");o.value=p;o.textContent=(p>0?"+":"")+p+"%"+(p===0?" (хэвийн)":"");if(p===0)o.selected=true;$("spd").appendChild(o);}
+let timer=null,busy=false,last="",hot=0;
 const mm=s=>new Date(s).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-function render(cmds,online){
+const SL={new:"⏳ хүлээж байна",running:"⚙ ажиллаж байна",done:"✓ дууслаа",error:"✗ алдаа"};
+function label(c){
+  if(c.kind==="url")return "🔗 "+c.body;
+  if(c.kind==="act"){let a={};try{a=JSON.parse(c.body)}catch(e){}
+    const M={tt:"Орчуулга",gender:"Хүйс ялгах",tts:"Хоолой үүсгэх"};
+    if(a.a==="run")return "▶ "+(M[a.step]||a.step);
+    if(a.a==="export")return "📤 Экспорт: "+(a.voice&&a.sub?"хоолой+хадмал":a.voice?"зөвхөн хоолой":"зөвхөн хадмал");
+    return ({auto_speed:"⚡ Хурд автомат",speed_all:"⚡ Бүх мөрийн хурд "+(a.pct>0?"+":"")+a.pct+"%",gender_all:a.g==="male"?"♂ Бүгдийг эр":"♀ Бүгдийг эм",emotion_all:"🎙 Сэтгэл хөдлөл: "+a.e,stop:"⏹ Зогсоох",status:"ℹ Төлөв"})[a.a]||c.body;}
+  return c.body;}
+function render(cmds,online,pcs){
   $("dot").classList.toggle("on",!!online);
-  $("st").textContent=online?"Компьютер асаалттай":"Компьютер холбогдоогүй";
+  $("st").textContent=online?(pcs||"Компьютер асаалттай"):"Компьютер холбогдоогүй (MXO асаалттай, интернэттэй эсэхийг шалгана уу)";
   const sig=JSON.stringify(cmds);if(sig===last)return;last=sig;
+  // үр дүнгийн жагсаалт (бүх төрөл, шинэ нь дээр)
+  const lg=$("log");lg.innerHTML="";
+  for(const c of cmds.slice().reverse().slice(0,8)){
+    const d=document.createElement("div");d.className="lg "+(c.status==="error"?"err":c.status==="done"?"done":"run");
+    d.textContent=label(c);const t=c.reply||c.progress||(c.status==="new"?"Дараалалд байна…":"Ажиллаж байна…");
+    const s=document.createElement("small");s.textContent=SL[c.status]+" · "+mm(c.at)+(t&&c.kind!=="chat"?" · "+t:"");d.appendChild(s);lg.appendChild(d);}
+  // AI чат
   const box=$("msgs"),atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<80;box.innerHTML="";
-  if(!cmds.length){const d=document.createElement("div");d.className="bot";d.textContent="Сайн байна уу! MXO-д команд өгнө үү. Жишээ нь: «бүх мөрийн хурдыг тааруул» эсвэл видеоны линк илгээнэ.";box.appendChild(d);}
-  for(const c of cmds){
-    const m=document.createElement("div");m.className="me";m.textContent=(c.kind==="url"?"🔗 ":"")+c.body;box.appendChild(m);
+  const ch=cmds.filter(c=>c.kind==="chat");
+  if(!ch.length){const d=document.createElement("div");d.className="bot";d.textContent="AI туслахад чөлөөтэй хэлбэрээр хүсэлт бичиж болно. Түргэн үйлдлүүдийг «Удирдлага» таб дахь товчоор хийнэ.";box.appendChild(d);}
+  for(const c of ch){
+    const m=document.createElement("div");m.className="me";m.textContent=c.body;box.appendChild(m);
     const b=document.createElement("div");b.className="bot "+(c.status==="error"?"err":c.status==="done"?"done":"run");
-    let t=c.reply||c.progress||(c.status==="new"?"Дараалалд байна…":"Ажиллаж байна…");
-    b.textContent=t;const s=document.createElement("small");s.textContent=({new:"⏳ хүлээж байна",running:"⚙ ажиллаж байна",done:"✓ дууслаа",error:"✗ алдаа"})[c.status]+" · "+mm(c.at);b.appendChild(s);box.appendChild(b);
-  }
-  if(atEnd||cmds.length)box.scrollTop=box.scrollHeight;
+    b.textContent=c.reply||c.progress||(c.status==="new"?"Дараалалд байна…":"Ажиллаж байна…");
+    const s=document.createElement("small");s.textContent=SL[c.status]+" · "+mm(c.at);b.appendChild(s);box.appendChild(b);}
+  if(atEnd||ch.length)box.scrollTop=box.scrollHeight;
 }
 async function tick(){
   if(busy||document.hidden)return;busy=true;
   try{const r=await rpc("mxo_remote_inbox",{p_phone:tok()});
-    if(r.ok)render(r.cmds||[],r.pc_online);
+    if(r.ok){const cmds=r.cmds||[];if(cmds.some(c=>c.status==="new"||c.status==="running"))hot=Date.now();render(cmds,r.pc_online,r.pc_status);}
     else if(r.code==="auth"){setTok("");stop();show(true);$("err").textContent=ERR.auth;}
   }catch(e){$("st").textContent="Сүлжээ алдаатай";$("dot").classList.remove("on");}
   busy=false;
 }
-function start(){show(false);last="";tick();clearInterval(timer);timer=setInterval(tick,4000);}
-function stop(){clearInterval(timer);timer=null;}
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&tok())tick();});
-async function send(text){
-  text=text.trim();if(!text)return;
-  const kind=VID.test(text.split(/\s+/)[0])?"url":"chat";
-  $("bSend").disabled=true;
-  try{const r=await rpc("mxo_remote_send",{p_phone:tok(),p_kind:kind,p_body:text});
-    if(r.ok){$("q").value="";$("q").style.height="auto";last="";tick();}
-    else if(r.code==="auth"){setTok("");stop();show(true);$("err").textContent=ERR.auth;}
-    else alert(ERR[r.code]||"Илгээж чадсангүй");
-  }catch(e){alert("Сүлжээний алдаа: "+e.message);}
-  $("bSend").disabled=false;
+function loop(){clearTimeout(timer);const fast=Date.now()-hot<60000;timer=setTimeout(async()=>{await tick();if(tok())loop();},fast?1500:5000);}
+function start(){show(false);last="";hot=Date.now();tick();loop();}
+function stop(){clearTimeout(timer);timer=null;}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&tok()){hot=Date.now();tick();}});
+async function send(kind,body,okMsg){
+  body=String(body||"").trim();if(!body)return false;
+  try{const r=await rpc("mxo_remote_send",{p_phone:tok(),p_kind:kind,p_body:body});
+    if(r.ok){hot=Date.now();last="";tick();loop();if(okMsg)toast(okMsg);return true;}
+    if(r.code==="auth"){setTok("");stop();show(true);$("err").textContent=ERR.auth;}
+    else toast(ERR[r.code]||"Илгээж чадсангүй");
+  }catch(e){toast("Сүлжээний алдаа: "+e.message);}
+  return false;
 }
-$("f").onsubmit=e=>{e.preventDefault();send($("q").value);};
+document.querySelectorAll("button[data-a]").forEach(b=>b.onclick=()=>send("act",b.dataset.a,"Илгээлээ"));
+$("bSpd").onclick=()=>send("act",JSON.stringify({a:"speed_all",pct:parseInt($("spd").value,10)}),"Илгээлээ");
+$("bEmo").onclick=()=>send("act",JSON.stringify({a:"emotion_all",e:$("emo").value}),"Илгээлээ");
+$("bUrl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("url",u,"Эхэллээ"))$("url").value="";};
+$("f").onsubmit=async e=>{e.preventDefault();const t=$("q").value.trim();if(!t)return;$("bSend").disabled=true;if(await send("chat",t)){$("q").value="";$("q").style.height="auto";}$("bSend").disabled=false;};
 $("q").addEventListener("input",e=>{const t=e.target;t.style.height="auto";t.style.height=Math.min(120,t.scrollHeight)+"px";});
-$("q").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!/Mobi|Android|iPhone/i.test(navigator.userAgent)){e.preventDefault();send($("q").value);}});
-const QUICK=["Одоогийн төлөв?","Бүх мөрийн хурдыг автоматаар тааруул","Бүх мөрийг эм хоолой болго"];
-for(const t of QUICK){const b=document.createElement("button");b.type="button";b.textContent=t;b.onclick=()=>send(t);$("chips").appendChild(b);}
 (async()=>{
   const h=new URLSearchParams(location.hash.slice(1)).get("p");
   if(h){history.replaceState(null,"",location.pathname+location.search);show(true);await claim(h);return;}
