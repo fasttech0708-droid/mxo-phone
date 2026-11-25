@@ -67,6 +67,9 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
   <div class="sec"><h3>🔗 ВИДЕОНЫ ЛИНК</h3>
    <div class="row"><input id="url" placeholder="https://youtu.be/…"></div>
    <div class="row" style="margin-top:8px"><button class="pri" id="bDl" style="flex:2">⬇ Зөвхөн татах</button><button id="bUrl" style="flex:1" title="Татах → орчуулах → хоолой → экспорт бүгд автоматаар">Бүгдийг автомат</button></div></div>
+  <div class="sec"><h3>🌐 ЯРИАНЫ ХЭЛ (видеон дээрх)</h3>
+   <div class="row"><select id="lg"><option>Хятад (zh)</option><option>Хятад уламжлалт (zh-tw)</option><option>Англи (en)</option><option>Япон (ja)</option><option>Солонгос (ko)</option><option>Орос (ru)</option><option>Герман (de)</option><option>Франц (fr)</option><option>Испани (es)</option><option>Автомат (auto)</option></select></div>
+   <div class="hint">Сонгоход компьютер дээрх «Транскрипц хэл» шууд солигдоно.</div></div>
   <div class="sec"><h3>▶ АЛХМУУД (компьютер дээрх төсөл дээр)</h3>
    <div class="row"><button data-a='{"a":"run","step":"tt"}'>Орчуулга</button><button data-a='{"a":"run","step":"gender"}'>Хүйс ялгах</button><button data-a='{"a":"run","step":"tts"}'>Хоолой үүсгэх</button></div></div>
   <div class="sec"><h3>⚡ БҮХ МӨРИЙН ХУРД</h3>
@@ -75,6 +78,10 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
   <div class="sec"><h3>🎙 ХООЛОЙН ХҮЙС (бүх мөр)</h3>
    <div class="row two"><button data-a='{"a":"gender_all","g":"male"}'>♂ Бүгдийг эр</button><button data-a='{"a":"gender_all","g":"female"}'>♀ Бүгдийг эм</button></div></div>
   <div class="sec"><div class="row two"><button data-a='{"a":"status"}'>ℹ Төлөв</button><button class="dng" data-a='{"a":"stop"}'>⏹ Зогсоох</button></div></div>
+  <div class="sec"><h3>🧪 GEMINI (орчуулга)</h3>
+   <div class="row"><button class="pri" data-a='{"a":"gem_test"}' style="flex:2">🧪 Шалгах</button></div>
+   <div class="row" style="margin-top:8px"><button data-a='{"a":"gem_watch","on":true}'>🔁 Хэвийн болтол хяна</button><button data-a='{"a":"gem_watch","on":false}'>⏹ Хянахаа болих</button></div>
+   <div class="hint" id="gwS">Хяна: 10 минут тутам шалгаад, хэвийн болмогц энд мэдэгдэнэ.</div></div>
   <div class="sec"><h3>🔊 ДУУНЫ ТҮВШИН</h3>
    <div class="sl"><span>🎙 Үүсгэсэн хоолой</span><b id="tvV">+40%</b></div>
    <input type="range" id="tv" min="-50" max="200" step="5" value="40">
@@ -122,6 +129,9 @@ function label(c){
   if(c.kind==="act"){let a={};try{a=JSON.parse(c.body)}catch(e){}
     const M={tt:"Орчуулга",gender:"Хүйс ялгах",tts:"Хоолой үүсгэх"};
     if(a.a==="run")return "▶ "+(M[a.step]||a.step);
+    if(a.a==="set_lang")return "🌐 Хэл: "+a.v;
+    if(a.a==="gem_test")return "🧪 Gemini шалгах";
+    if(a.a==="gem_watch")return a.on?"🔁 Gemini хяналт эхлэв":"⏹ Gemini хяналт зогслоо";
     if(a.a==="download")return "⬇ Татах: "+(a.url||"");
     if(a.a==="render")return "🎬 Рендер: "+(a.mode==="voice"?"зөвхөн хоолой":a.mode==="sub"?"зөвхөн хадмал":"хоолой+хадмал")+" · хоолой "+(a.tv>0?"+":"")+a.tv+"% · ориг "+a.ov+"%";
     if(a.a==="export")return "📤 Экспорт: "+(a.voice&&a.sub?"хоолой+хадмал":a.voice?"зөвхөн хоолой":"зөвхөн хадмал");
@@ -138,6 +148,8 @@ function stepsHtml(d){
 const CUR={transcribe:"Транскрипц хийж байна",translate:"Монгол руу орчуулж байна",gender:"Хүйс ялгаж байна",tts:"Монгол хоолой үүсгэж байна",export:"Экспорт хийж байна",all:"Алхмуудыг дараалан хийж байна"};
 function renderLive(online,pcs,cmds){
   const el=$("live");let d=null;try{d=JSON.parse(pcs)}catch(e){}
+  {const lg=$("lg");if(lg&&d&&d.lg&&document.activeElement!==lg&&lg.value!==d.lg)lg.value=d.lg;}
+  {const w=$("gwS");if(w&&d)w.textContent=d.gw?"🔁 Хяналт асаалттай — 10 минут тутам шалгаж байна.":"Хяна: 10 минут тутам шалгаад, хэвийн болмогц энд мэдэгдэнэ.";}
   {const b=$("gnb");const gn=d&&d.gn;let seen="";try{seen=localStorage.getItem("mxo_gn_seen")||"";}catch(e){}
    if(gn&&String(gn.t)!==seen){b.textContent=gn.m+" — дарж арилгана";b.classList.remove("hide");b.onclick=()=>{try{localStorage.setItem("mxo_gn_seen",String(gn.t));}catch(e){}b.classList.add("hide");};
      if(window.__gnT!==gn.t){window.__gnT=gn.t;try{navigator.vibrate&&navigator.vibrate([250,100,250,100,400]);}catch(e){}toast(gn.m);}}
@@ -221,6 +233,7 @@ async function send(kind,body,okMsg){
 }
 document.querySelectorAll("button[data-a]").forEach(b=>b.onclick=()=>send("act",b.dataset.a,"Илгээлээ"));
 $("bSpd").onclick=()=>send("act",JSON.stringify({a:"speed_all",pct:parseInt($("spd").value,10)}),"Илгээлээ");
+$("lg").onchange=()=>send("act",JSON.stringify({a:"set_lang",v:$("lg").value}),"Хэл солигдлоо");
 $("bDl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("act",JSON.stringify({a:"download",url:u}),"Татаж эхэллээ"))$("url").value="";};
 const LSV="mxo_phone_vol";
 function volLoad(){try{const o=JSON.parse(localStorage.getItem(LSV)||"{}");if(typeof o.tv==="number")$("tv").value=o.tv;if(typeof o.ov==="number")$("ov").value=o.ov;if(o.rm)$("rm").value=o.rm;}catch(e){}volShow();}
