@@ -47,6 +47,7 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
 .llog{font:12px/1.55 Consolas,monospace;margin-top:6px;color:#aab2c5;max-height:110px;overflow:auto}
 .llog div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.llog .w{color:var(--wr)}.llog .e{color:var(--er)}.llog .a{color:#8fb0ff}
 .sl{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}.sl b{color:var(--ac)}input[type=range]{padding:0;border:0;background:none;accent-color:var(--ac);height:28px}.gnb{border:1px solid #24503d;background:#10281f;color:#9be6bf;border-radius:14px;padding:11px 14px;margin:0 0 12px;font-weight:600}.gwt{color:var(--mu);font-size:12.5px;margin:0 0 10px}
+label.ck{display:flex;align-items:center;gap:8px;font-size:14px}label.ck input{width:auto}
 .hint{color:var(--mu);font-size:12px;margin-top:6px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222833;border:1px solid var(--ln);padding:9px 14px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}#toast.on{opacity:1}
 .hide{display:none!important}
@@ -82,6 +83,10 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
    <div class="row"><button class="pri" data-a='{"a":"gem_test"}' style="flex:2">🧪 Шалгах</button></div>
    <div class="row" style="margin-top:8px"><button data-a='{"a":"gem_watch","on":true}'>🔁 Хэвийн болтол хяна</button><button data-a='{"a":"gem_watch","on":false}'>⏹ Хянахаа болих</button></div>
    <div class="hint" id="gwS">Хяна: 10 минут тутам шалгаад, хэвийн болмогц энд мэдэгдэнэ.</div></div>
+  <div class="sec"><h3>🎞 ТРЕЙЛЕР (видеоны сонгосон хэсгийг л экспортлох)</h3>
+   <label class="ck"><input type="checkbox" id="cOn"> Трейлер хийх</label>
+   <div class="row" style="margin-top:8px"><input id="cS" placeholder="Эхлэл м:сс" value="0:00" inputmode="numeric" style="flex:1;min-width:0"><input id="cE" placeholder="Төгсгөл м:сс" value="3:00" inputmode="numeric" style="flex:1;min-width:0"></div>
+   <div class="hint">Жишээ: 0:00 – 3:00 (3 минут). Рендер дарахад хэрэгжинэ.</div></div>
   <div class="sec"><h3>🔊 ДУУНЫ ТҮВШИН</h3>
    <div class="sl"><span>🎙 Үүсгэсэн хоолой</span><b id="tvV">+40%</b></div>
    <input type="range" id="tv" min="-50" max="200" step="5" value="40">
@@ -134,7 +139,7 @@ function label(c){
     if(a.a==="gem_test")return "🧪 Gemini шалгах";
     if(a.a==="gem_watch")return a.on?"🔁 Gemini хяналт эхлэв":"⏹ Gemini хяналт зогслоо";
     if(a.a==="download")return "⬇ Татах: "+(a.url||"");
-    if(a.a==="render")return "🎬 Рендер: "+(a.mode==="voice"?"зөвхөн хоолой":a.mode==="sub"?"зөвхөн хадмал":"хоолой+хадмал")+" · "+(a.fmt||"mp4").toUpperCase()+" · хоолой "+(a.tv>0?"+":"")+a.tv+"% · ориг "+a.ov+"%";
+    if(a.a==="render")return "🎬 Рендер: "+(a.mode==="voice"?"зөвхөн хоолой":a.mode==="sub"?"зөвхөн хадмал":"хоолой+хадмал")+(a.cut_on?" · трейлер "+Math.floor(a.cut_s/60)+":"+String(Math.floor(a.cut_s%60)).padStart(2,"0")+"–"+Math.floor(a.cut_e/60)+":"+String(Math.floor(a.cut_e%60)).padStart(2,"0"):"")+" · "+(a.fmt||"mp4").toUpperCase()+" · хоолой "+(a.tv>0?"+":"")+a.tv+"% · ориг "+a.ov+"%";
     if(a.a==="export")return "📤 Экспорт: "+(a.voice&&a.sub?"хоолой+хадмал":a.voice?"зөвхөн хоолой":"зөвхөн хадмал");
     return ({auto_speed:"⚡ Хурд автомат",speed_all:"⚡ Бүх мөрийн хурд "+(a.pct>0?"+":"")+a.pct+"%",gender_all:a.g==="male"?"♂ Бүгдийг эр":"♀ Бүгдийг эм",emotion_all:"🎙 Сэтгэл хөдлөл: "+a.e,stop:"⏹ Зогсоох",status:"ℹ Төлөв"})[a.a]||c.body;}
   return c.body;}
@@ -149,6 +154,7 @@ function stepsHtml(d){
 const CUR={transcribe:"Транскрипц хийж байна",translate:"Монгол руу орчуулж байна",gender:"Хүйс ялгаж байна",tts:"Монгол хоолой үүсгэж байна",export:"Экспорт хийж байна",all:"Алхмуудыг дараалан хийж байна"};
 function renderLive(online,pcs,cmds){
   const el=$("live");let d=null;try{d=JSON.parse(pcs)}catch(e){}
+  {if(d&&d.cut&&!cDirty&&document.activeElement.tagName!=="INPUT"){const fm=x=>Math.floor(x/60)+":"+String(Math.floor(x%60)).padStart(2,"0");$("cOn").checked=!!d.cut.on;$("cS").value=fm(d.cut.s);$("cE").value=fm(d.cut.e);}}
   {const lg=$("lg");if(lg&&d&&d.lg&&document.activeElement!==lg&&lg.value!==d.lg)lg.value=d.lg;}
   {const w=$("gwS");if(w&&d)w.textContent=d.gw?"🔁 Хяналт асаалттай — 10 минут тутам шалгаж байна.":"Хяна: 10 минут тутам шалгаад, хэвийн болмогц энд мэдэгдэнэ.";}
   {const b=$("gnb");const gn=d&&d.gn;let seen="";try{seen=localStorage.getItem("mxo_gn_seen")||"";}catch(e){}
@@ -241,7 +247,10 @@ function volLoad(){try{const o=JSON.parse(localStorage.getItem(LSV)||"{}");if(ty
 function volShow(){const t=+$("tv").value;$("tvV").textContent=(t>0?"+":"")+t+"%";$("ovV").textContent=$("ov").value+"%";}
 function volSave(){volShow();try{localStorage.setItem(LSV,JSON.stringify({tv:+$("tv").value,ov:+$("ov").value,rm:$("rm").value,fm:$("fm").value}));}catch(e){}}
 $("tv").oninput=volSave;$("ov").oninput=volSave;$("rm").onchange=volSave;$("fm").onchange=volSave;volLoad();
-$("bRender").onclick=()=>send("act",JSON.stringify({a:"render",mode:$("rm").value,fmt:$("fm").value,tv:+$("tv").value,ov:+$("ov").value}),"Рендер эхэллээ");
+function tsec(v){v=String(v||"").trim();if(!v)return NaN;const p=v.split(":").map(Number);if(p.some(x=>isNaN(x)||x<0))return NaN;return p.length===3?p[0]*3600+p[1]*60+p[2]:p.length===2?p[0]*60+p[1]:p[0];}
+let cDirty=false;["cOn","cS","cE"].forEach(i=>$(i).addEventListener("input",()=>{cDirty=true;}));
+function cutPart(){const on=$("cOn").checked;if(!on)return {cut_on:false};const s=tsec($("cS").value),e=tsec($("cE").value);if(isNaN(s)||isNaN(e)||e<=s){toast("Трейлерын цагийг зөв оруулна уу (эхлэл < төгсгөл)");return null;}return {cut_on:true,cut_s:s,cut_e:e};}
+$("bRender").onclick=()=>{const c=cutPart();if(!c)return;send("act",JSON.stringify(Object.assign({a:"render",mode:$("rm").value,fmt:$("fm").value,tv:+$("tv").value,ov:+$("ov").value},c)),"Рендер эхэллээ");};
 $("bUrl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("url",u,"Эхэллээ"))$("url").value="";};
 $("f").onsubmit=async e=>{e.preventDefault();const t=$("q").value.trim();if(!t)return;$("bSend").disabled=true;if(await send("chat",t)){$("q").value="";$("q").style.height="auto";}$("bSend").disabled=false;};
 $("q").addEventListener("input",e=>{const t=e.target;t.style.height="auto";t.style.height=Math.min(120,t.scrollHeight)+"px";});
