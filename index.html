@@ -46,6 +46,7 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
 .lh{display:flex;justify-content:space-between;color:var(--mu);font-size:12.5px;margin-top:10px;padding-top:9px;border-top:1px solid var(--ln);cursor:pointer}
 .llog{font:12px/1.55 Consolas,monospace;margin-top:6px;color:#aab2c5;max-height:110px;overflow:auto}
 .llog div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.llog .w{color:var(--wr)}.llog .e{color:var(--er)}.llog .a{color:#8fb0ff}
+.sl{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}.sl b{color:var(--ac)}input[type=range]{padding:0;border:0;background:none;accent-color:var(--ac);height:28px}.hint{color:var(--mu);font-size:12px;margin-top:6px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222833;border:1px solid var(--ln);padding:9px 14px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}#toast.on{opacity:1}
 .hide{display:none!important}
 </style></head><body><div id="app">
@@ -61,19 +62,26 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
  <div class="tabs"><button id="t1" class="on">Удирдлага</button><button id="t2">AI чат</button></div>
  <div class="pane on" id="p1"><div id="ctl">
   <div id="live" class="live off"><div class="lt">…</div></div>
-  <div class="sec"><h3>🔗 ВИДЕОНЫ ЛИНК (автомат: татах → орчуулах → хоолой → экспорт)</h3>
-   <div class="row"><input id="url" placeholder="https://youtu.be/…" style="flex:3;min-width:0"><button class="pri" id="bUrl" style="flex:1;min-width:90px">Эхлүүл</button></div></div>
+  <div class="sec"><h3>🔗 ВИДЕОНЫ ЛИНК</h3>
+   <div class="row"><input id="url" placeholder="https://youtu.be/…"></div>
+   <div class="row" style="margin-top:8px"><button class="pri" id="bDl" style="flex:2">⬇ Зөвхөн татах</button><button id="bUrl" style="flex:1" title="Татах → орчуулах → хоолой → экспорт бүгд автоматаар">Бүгдийг автомат</button></div></div>
   <div class="sec"><h3>▶ АЛХМУУД (компьютер дээрх төсөл дээр)</h3>
    <div class="row"><button data-a='{"a":"run","step":"tt"}'>Орчуулга</button><button data-a='{"a":"run","step":"gender"}'>Хүйс ялгах</button><button data-a='{"a":"run","step":"tts"}'>Хоолой үүсгэх</button></div></div>
-  <div class="sec"><h3>📤 ЭКСПОРТ</h3>
-   <div class="row"><button data-a='{"a":"export","sub":true,"voice":true}'>Хоолой + хадмал</button><button data-a='{"a":"export","sub":false,"voice":true}'>Зөвхөн хоолой</button><button data-a='{"a":"export","sub":true,"voice":false}'>Зөвхөн хадмал</button></div></div>
   <div class="sec"><h3>⚡ БҮХ МӨРИЙН ХУРД</h3>
    <div class="row"><button data-a='{"a":"auto_speed"}' style="flex:2">Автоматаар тааруул</button></div>
    <div class="row" style="margin-top:8px"><select id="spd"></select><button id="bSpd" style="flex:none">Хэрэгжүүл</button></div></div>
-  <div class="sec"><h3>🎙 ХООЛОЙ, СЭТГЭЛ ХӨДЛӨЛ (бүх мөр)</h3>
-   <div class="row two"><button data-a='{"a":"gender_all","g":"male"}'>♂ Бүгдийг эр</button><button data-a='{"a":"gender_all","g":"female"}'>♀ Бүгдийг эм</button></div>
-   <div class="row" style="margin-top:8px"><select id="emo"><option value="neutral">Хэвийн</option><option value="happy">Баяртай</option><option value="angry">Ууртай</option><option value="sad">Гунигтай</option><option value="fear">Айсан</option><option value="surprise">Гайхсан</option><option value="shout">Хашгирсан</option><option value="whisper">Шивнэсэн</option></select><button id="bEmo" style="flex:none">Хэрэгжүүл</button></div></div>
+  <div class="sec"><h3>🎙 ХООЛОЙН ХҮЙС (бүх мөр)</h3>
+   <div class="row two"><button data-a='{"a":"gender_all","g":"male"}'>♂ Бүгдийг эр</button><button data-a='{"a":"gender_all","g":"female"}'>♀ Бүгдийг эм</button></div></div>
   <div class="sec"><div class="row two"><button data-a='{"a":"status"}'>ℹ Төлөв</button><button class="dng" data-a='{"a":"stop"}'>⏹ Зогсоох</button></div></div>
+  <div class="sec"><h3>🔊 ДУУНЫ ТҮВШИН</h3>
+   <div class="sl"><span>🎙 Үүсгэсэн хоолой</span><b id="tvV">+40%</b></div>
+   <input type="range" id="tv" min="-50" max="200" step="5" value="40">
+   <div class="sl" style="margin-top:12px"><span>🎞 Оригинал дуу</span><b id="ovV">25%</b></div>
+   <input type="range" id="ov" min="0" max="100" step="5" value="25">
+   <div class="hint">Оригинал дуу 0% бол анхны дууг хэрэглэхгүй.</div></div>
+  <div class="sec"><h3>🎬 РЕНДЕР (ЭКСПОРТ)</h3>
+   <div class="row"><select id="rm"><option value="both">Хоолой + хадмал</option><option value="voice">Зөвхөн хоолой</option><option value="sub">Зөвхөн хадмал</option></select></div>
+   <div class="row" style="margin-top:8px"><button class="pri" id="bRender">🎬 Рендер</button></div></div>
   <div class="sec"><h3>ҮР ДҮН</h3><div id="log"></div></div>
  </div></div>
  <div class="pane" id="p2"><div id="msgs"></div>
@@ -112,6 +120,8 @@ function label(c){
   if(c.kind==="act"){let a={};try{a=JSON.parse(c.body)}catch(e){}
     const M={tt:"Орчуулга",gender:"Хүйс ялгах",tts:"Хоолой үүсгэх"};
     if(a.a==="run")return "▶ "+(M[a.step]||a.step);
+    if(a.a==="download")return "⬇ Татах: "+(a.url||"");
+    if(a.a==="render")return "🎬 Рендер: "+(a.mode==="voice"?"зөвхөн хоолой":a.mode==="sub"?"зөвхөн хадмал":"хоолой+хадмал")+" · хоолой "+(a.tv>0?"+":"")+a.tv+"% · ориг "+a.ov+"%";
     if(a.a==="export")return "📤 Экспорт: "+(a.voice&&a.sub?"хоолой+хадмал":a.voice?"зөвхөн хоолой":"зөвхөн хадмал");
     return ({auto_speed:"⚡ Хурд автомат",speed_all:"⚡ Бүх мөрийн хурд "+(a.pct>0?"+":"")+a.pct+"%",gender_all:a.g==="male"?"♂ Бүгдийг эр":"♀ Бүгдийг эм",emotion_all:"🎙 Сэтгэл хөдлөл: "+a.e,stop:"⏹ Зогсоох",status:"ℹ Төлөв"})[a.a]||c.body;}
   return c.body;}
@@ -126,7 +136,7 @@ function stepsHtml(d){
 const CUR={transcribe:"Транскрипц хийж байна",translate:"Монгол руу орчуулж байна",gender:"Хүйс ялгаж байна",tts:"Монгол хоолой үүсгэж байна",export:"Экспорт хийж байна",all:"Алхмуудыг дараалан хийж байна"};
 function renderLive(online,pcs,cmds){
   const el=$("live");let d=null;try{d=JSON.parse(pcs)}catch(e){}
-  window.__exDone=(cmds||[]).some(c=>c.kind==="act"&&c.status==="done"&&/"export"/.test(c.body));
+  window.__exDone=(cmds||[]).some(c=>c.kind==="act"&&c.status==="done"&&/"(export|render)"/.test(c.body));
   if(!online){el.className="live off";el.innerHTML='<div class="lt">⚠ Компьютер холбогдоогүй</div><div class="lmeta">MXO хаалттай, компьютер унтарсан/sleep хийсэн эсвэл интернэтгүй байж магадгүй. Холбогдоход автоматаар шинэчлэгдэнэ.</div>';return;}
   if(!d){el.className="live ok";el.innerHTML='<div class="lt" style="color:var(--ok)">✓ Компьютер асаалттай</div>'+(pcs?'<div class="lmeta">'+esc(pcs)+'</div>':"");return;}
   const run=!!d.busy||!!d.pl;
@@ -205,7 +215,13 @@ async function send(kind,body,okMsg){
 }
 document.querySelectorAll("button[data-a]").forEach(b=>b.onclick=()=>send("act",b.dataset.a,"Илгээлээ"));
 $("bSpd").onclick=()=>send("act",JSON.stringify({a:"speed_all",pct:parseInt($("spd").value,10)}),"Илгээлээ");
-$("bEmo").onclick=()=>send("act",JSON.stringify({a:"emotion_all",e:$("emo").value}),"Илгээлээ");
+$("bDl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("act",JSON.stringify({a:"download",url:u}),"Татаж эхэллээ"))$("url").value="";};
+const LSV="mxo_phone_vol";
+function volLoad(){try{const o=JSON.parse(localStorage.getItem(LSV)||"{}");if(typeof o.tv==="number")$("tv").value=o.tv;if(typeof o.ov==="number")$("ov").value=o.ov;if(o.rm)$("rm").value=o.rm;}catch(e){}volShow();}
+function volShow(){const t=+$("tv").value;$("tvV").textContent=(t>0?"+":"")+t+"%";$("ovV").textContent=$("ov").value+"%";}
+function volSave(){volShow();try{localStorage.setItem(LSV,JSON.stringify({tv:+$("tv").value,ov:+$("ov").value,rm:$("rm").value}));}catch(e){}}
+$("tv").oninput=volSave;$("ov").oninput=volSave;$("rm").onchange=volSave;volLoad();
+$("bRender").onclick=()=>send("act",JSON.stringify({a:"render",mode:$("rm").value,tv:+$("tv").value,ov:+$("ov").value}),"Рендер эхэллээ");
 $("bUrl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("url",u,"Эхэллээ"))$("url").value="";};
 $("f").onsubmit=async e=>{e.preventDefault();const t=$("q").value.trim();if(!t)return;$("bSend").disabled=true;if(await send("chat",t)){$("q").value="";$("q").style.height="auto";}$("bSend").disabled=false;};
 $("q").addEventListener("input",e=>{const t=e.target;t.style.height="auto";t.style.height=Math.min(120,t.scrollHeight)+"px";});
