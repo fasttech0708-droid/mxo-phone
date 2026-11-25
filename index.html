@@ -85,8 +85,11 @@ label.ck{display:flex;align-items:center;gap:8px;font-size:14px}label.ck input{w
    <div class="hint" id="gwS">Хяна: 10 минут тутам шалгаад, хэвийн болмогц энд мэдэгдэнэ.</div></div>
   <div class="sec"><h3>🎞 ТРЕЙЛЕР (видеоны сонгосон хэсгийг л экспортлох)</h3>
    <label class="ck"><input type="checkbox" id="cOn"> Трейлер хийх</label>
-   <div class="row" style="margin-top:8px"><input id="cS" placeholder="Эхлэл м:сс" value="0:00" inputmode="numeric" style="flex:1;min-width:0"><input id="cE" placeholder="Төгсгөл м:сс" value="3:00" inputmode="numeric" style="flex:1;min-width:0"></div>
-   <div class="hint">Жишээ: 0:00 – 3:00 (3 минут). Рендер дарахад хэрэгжинэ.</div></div>
+   <div class="sl" style="margin-top:10px"><span>▶ Эхлэл</span><b id="cSv">0:00</b></div>
+   <input type="range" id="cS" min="0" max="7200" step="1" value="0">
+   <div class="sl" style="margin-top:10px"><span>■ Төгсгөл</span><b id="cEv">3:00</b></div>
+   <input type="range" id="cE" min="0" max="7200" step="1" value="180">
+   <div class="hint" id="cH">Гулсагчаар сонгоно. Рендер дарахад хэрэгжинэ.</div></div>
   <div class="sec"><h3>🔊 ДУУНЫ ТҮВШИН</h3>
    <div class="sl"><span>🎙 Үүсгэсэн хоолой</span><b id="tvV">+40%</b></div>
    <input type="range" id="tv" min="-50" max="200" step="5" value="40">
@@ -154,7 +157,7 @@ function stepsHtml(d){
 const CUR={transcribe:"Транскрипц хийж байна",translate:"Монгол руу орчуулж байна",gender:"Хүйс ялгаж байна",tts:"Монгол хоолой үүсгэж байна",export:"Экспорт хийж байна",all:"Алхмуудыг дараалан хийж байна"};
 function renderLive(online,pcs,cmds){
   const el=$("live");let d=null;try{d=JSON.parse(pcs)}catch(e){}
-  {if(d&&d.cut&&!cDirty&&document.activeElement.tagName!=="INPUT"){const fm=x=>Math.floor(x/60)+":"+String(Math.floor(x%60)).padStart(2,"0");$("cOn").checked=!!d.cut.on;$("cS").value=fm(d.cut.s);$("cE").value=fm(d.cut.e);}}
+  {if(d&&d.cut){cRange(d.cut.dur);if(!cDirty){$("cOn").checked=!!d.cut.on;$("cS").value=Math.min(d.cut.s,+$("cS").max);$("cE").value=Math.min(d.cut.e,+$("cE").max);}cShow();}}
   {const lg=$("lg");if(lg&&d&&d.lg&&document.activeElement!==lg&&lg.value!==d.lg)lg.value=d.lg;}
   {const w=$("gwS");if(w&&d)w.textContent=d.gw?"🔁 Хяналт асаалттай — 10 минут тутам шалгаж байна.":"Хяна: 10 минут тутам шалгаад, хэвийн болмогц энд мэдэгдэнэ.";}
   {const b=$("gnb");const gn=d&&d.gn;let seen="";try{seen=localStorage.getItem("mxo_gn_seen")||"";}catch(e){}
@@ -247,9 +250,15 @@ function volLoad(){try{const o=JSON.parse(localStorage.getItem(LSV)||"{}");if(ty
 function volShow(){const t=+$("tv").value;$("tvV").textContent=(t>0?"+":"")+t+"%";$("ovV").textContent=$("ov").value+"%";}
 function volSave(){volShow();try{localStorage.setItem(LSV,JSON.stringify({tv:+$("tv").value,ov:+$("ov").value,rm:$("rm").value,fm:$("fm").value}));}catch(e){}}
 $("tv").oninput=volSave;$("ov").oninput=volSave;$("rm").onchange=volSave;$("fm").onchange=volSave;volLoad();
-function tsec(v){v=String(v||"").trim();if(!v)return NaN;const p=v.split(":").map(Number);if(p.some(x=>isNaN(x)||x<0))return NaN;return p.length===3?p[0]*3600+p[1]*60+p[2]:p.length===2?p[0]*60+p[1]:p[0];}
-let cDirty=false;["cOn","cS","cE"].forEach(i=>$(i).addEventListener("input",()=>{cDirty=true;}));
-function cutPart(){const on=$("cOn").checked;if(!on)return {cut_on:false};const s=tsec($("cS").value),e=tsec($("cE").value);if(isNaN(s)||isNaN(e)||e<=s){toast("Трейлерын цагийг зөв оруулна уу (эхлэл < төгсгөл)");return null;}return {cut_on:true,cut_s:s,cut_e:e};}
+const fmt=x=>{x=Math.max(0,Math.round(x));const hh=Math.floor(x/3600),mm=Math.floor(x%3600/60),ss=x%60;return (hh?hh+":"+String(mm).padStart(2,"0"):mm)+":"+String(ss).padStart(2,"0");};
+let cDirty=false,cDur=0;
+function cShow(){$("cSv").textContent=fmt(+$("cS").value);$("cEv").textContent=fmt(+$("cE").value);$("cH").textContent="Хэсгийн урт: "+fmt(Math.max(0,+$("cE").value-+$("cS").value))+(cDur?" · видео "+fmt(cDur):"");}
+function cRange(dur){dur=Math.max(0,Math.floor(dur||0));if(dur===cDur&&$("cS").max!=="7200")return;cDur=dur;const mx=dur>0?dur:7200,st=mx>1800?5:1;["cS","cE"].forEach(i=>{$(i).max=mx;$(i).step=st;});}
+$("cS").oninput=()=>{cDirty=true;if(+$("cS").value>=+$("cE").value)$("cE").value=Math.min(+$("cE").max,+$("cS").value+(+$("cS").step));cShow();};
+$("cE").oninput=()=>{cDirty=true;if(+$("cE").value<=+$("cS").value)$("cS").value=Math.max(0,+$("cE").value-(+$("cE").step));cShow();};
+$("cOn").addEventListener("input",()=>{cDirty=true;});
+cRange(0);cShow();
+function cutPart(){const on=$("cOn").checked;if(!on)return {cut_on:false};const s=+$("cS").value,e=+$("cE").value;if(e<=s){toast("Төгсгөл нь эхлэлээс хойш байх ёстой");return null;}return {cut_on:true,cut_s:s,cut_e:e};}
 $("bRender").onclick=()=>{const c=cutPart();if(!c)return;send("act",JSON.stringify(Object.assign({a:"render",mode:$("rm").value,fmt:$("fm").value,tv:+$("tv").value,ov:+$("ov").value},c)),"Рендер эхэллээ");};
 $("bUrl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("url",u,"Эхэллээ"))$("url").value="";};
 $("f").onsubmit=async e=>{e.preventDefault();const t=$("q").value.trim();if(!t)return;$("bSend").disabled=true;if(await send("chat",t)){$("q").value="";$("q").style.height="auto";}$("bSend").disabled=false;};
