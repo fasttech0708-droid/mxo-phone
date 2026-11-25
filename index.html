@@ -89,7 +89,8 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
    <input type="range" id="ov" min="0" max="100" step="5" value="25">
    <div class="hint">Оригинал дуу 0% бол анхны дууг хэрэглэхгүй.</div></div>
   <div class="sec"><h3>🎬 РЕНДЕР (ЭКСПОРТ)</h3>
-   <div class="row"><select id="rm"><option value="both">Хоолой + хадмал</option><option value="voice">Зөвхөн хоолой</option><option value="sub">Зөвхөн хадмал</option></select></div>
+   <div class="row"><select id="fm"><option value="mp4">MP4</option><option value="mov">MOV</option><option value="mkv">MKV</option><option value="webm">WebM (удаан)</option></select></div>
+   <div class="row" style="margin-top:8px"><select id="rm"><option value="both">Хоолой + хадмал</option><option value="voice">Зөвхөн хоолой</option><option value="sub">Зөвхөн хадмал</option></select></div>
    <div class="row" style="margin-top:8px"><button class="pri" id="bRender">🎬 Рендер</button></div></div>
   <div class="sec"><h3>ҮР ДҮН</h3><div id="log"></div></div>
  </div></div>
@@ -133,7 +134,7 @@ function label(c){
     if(a.a==="gem_test")return "🧪 Gemini шалгах";
     if(a.a==="gem_watch")return a.on?"🔁 Gemini хяналт эхлэв":"⏹ Gemini хяналт зогслоо";
     if(a.a==="download")return "⬇ Татах: "+(a.url||"");
-    if(a.a==="render")return "🎬 Рендер: "+(a.mode==="voice"?"зөвхөн хоолой":a.mode==="sub"?"зөвхөн хадмал":"хоолой+хадмал")+" · хоолой "+(a.tv>0?"+":"")+a.tv+"% · ориг "+a.ov+"%";
+    if(a.a==="render")return "🎬 Рендер: "+(a.mode==="voice"?"зөвхөн хоолой":a.mode==="sub"?"зөвхөн хадмал":"хоолой+хадмал")+" · "+(a.fmt||"mp4").toUpperCase()+" · хоолой "+(a.tv>0?"+":"")+a.tv+"% · ориг "+a.ov+"%";
     if(a.a==="export")return "📤 Экспорт: "+(a.voice&&a.sub?"хоолой+хадмал":a.voice?"зөвхөн хоолой":"зөвхөн хадмал");
     return ({auto_speed:"⚡ Хурд автомат",speed_all:"⚡ Бүх мөрийн хурд "+(a.pct>0?"+":"")+a.pct+"%",gender_all:a.g==="male"?"♂ Бүгдийг эр":"♀ Бүгдийг эм",emotion_all:"🎙 Сэтгэл хөдлөл: "+a.e,stop:"⏹ Зогсоох",status:"ℹ Төлөв"})[a.a]||c.body;}
   return c.body;}
@@ -236,11 +237,11 @@ $("bSpd").onclick=()=>send("act",JSON.stringify({a:"speed_all",pct:parseInt($("s
 $("lg").onchange=()=>send("act",JSON.stringify({a:"set_lang",v:$("lg").value}),"Хэл солигдлоо");
 $("bDl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("act",JSON.stringify({a:"download",url:u}),"Татаж эхэллээ"))$("url").value="";};
 const LSV="mxo_phone_vol";
-function volLoad(){try{const o=JSON.parse(localStorage.getItem(LSV)||"{}");if(typeof o.tv==="number")$("tv").value=o.tv;if(typeof o.ov==="number")$("ov").value=o.ov;if(o.rm)$("rm").value=o.rm;}catch(e){}volShow();}
+function volLoad(){try{const o=JSON.parse(localStorage.getItem(LSV)||"{}");if(typeof o.tv==="number")$("tv").value=o.tv;if(typeof o.ov==="number")$("ov").value=o.ov;if(o.rm)$("rm").value=o.rm;if(o.fm)$("fm").value=o.fm;}catch(e){}volShow();}
 function volShow(){const t=+$("tv").value;$("tvV").textContent=(t>0?"+":"")+t+"%";$("ovV").textContent=$("ov").value+"%";}
-function volSave(){volShow();try{localStorage.setItem(LSV,JSON.stringify({tv:+$("tv").value,ov:+$("ov").value,rm:$("rm").value}));}catch(e){}}
-$("tv").oninput=volSave;$("ov").oninput=volSave;$("rm").onchange=volSave;volLoad();
-$("bRender").onclick=()=>send("act",JSON.stringify({a:"render",mode:$("rm").value,tv:+$("tv").value,ov:+$("ov").value}),"Рендер эхэллээ");
+function volSave(){volShow();try{localStorage.setItem(LSV,JSON.stringify({tv:+$("tv").value,ov:+$("ov").value,rm:$("rm").value,fm:$("fm").value}));}catch(e){}}
+$("tv").oninput=volSave;$("ov").oninput=volSave;$("rm").onchange=volSave;$("fm").onchange=volSave;volLoad();
+$("bRender").onclick=()=>send("act",JSON.stringify({a:"render",mode:$("rm").value,fmt:$("fm").value,tv:+$("tv").value,ov:+$("ov").value}),"Рендер эхэллээ");
 $("bUrl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("url",u,"Эхэллээ"))$("url").value="";};
 $("f").onsubmit=async e=>{e.preventDefault();const t=$("q").value.trim();if(!t)return;$("bSend").disabled=true;if(await send("chat",t)){$("q").value="";$("q").style.height="auto";}$("bSend").disabled=false;};
 $("q").addEventListener("input",e=>{const t=e.target;t.style.height="auto";t.style.height=Math.min(120,t.scrollHeight)+"px";});
