@@ -46,7 +46,8 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
 .lh{display:flex;justify-content:space-between;color:var(--mu);font-size:12.5px;margin-top:10px;padding-top:9px;border-top:1px solid var(--ln);cursor:pointer}
 .llog{font:12px/1.55 Consolas,monospace;margin-top:6px;color:#aab2c5;max-height:110px;overflow:auto}
 .llog div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.llog .w{color:var(--wr)}.llog .e{color:var(--er)}.llog .a{color:#8fb0ff}
-.sl{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}.sl b{color:var(--ac)}input[type=range]{padding:0;border:0;background:none;accent-color:var(--ac);height:28px}.hint{color:var(--mu);font-size:12px;margin-top:6px}
+.sl{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}.sl b{color:var(--ac)}input[type=range]{padding:0;border:0;background:none;accent-color:var(--ac);height:28px}.gnb{border:1px solid #24503d;background:#10281f;color:#9be6bf;border-radius:14px;padding:11px 14px;margin:0 0 12px;font-weight:600}.gwt{color:var(--mu);font-size:12.5px;margin:0 0 10px}
+.hint{color:var(--mu);font-size:12px;margin-top:6px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222833;border:1px solid var(--ln);padding:9px 14px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}#toast.on{opacity:1}
 .hide{display:none!important}
 </style></head><body><div id="app">
@@ -61,6 +62,7 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
  <div id="st">…</div>
  <div class="tabs"><button id="t1" class="on">Удирдлага</button><button id="t2">AI чат</button></div>
  <div class="pane on" id="p1"><div id="ctl">
+  <div id="gnb" class="gnb hide"></div>
   <div id="live" class="live off"><div class="lt">…</div></div>
   <div class="sec"><h3>🔗 ВИДЕОНЫ ЛИНК</h3>
    <div class="row"><input id="url" placeholder="https://youtu.be/…"></div>
@@ -136,6 +138,10 @@ function stepsHtml(d){
 const CUR={transcribe:"Транскрипц хийж байна",translate:"Монгол руу орчуулж байна",gender:"Хүйс ялгаж байна",tts:"Монгол хоолой үүсгэж байна",export:"Экспорт хийж байна",all:"Алхмуудыг дараалан хийж байна"};
 function renderLive(online,pcs,cmds){
   const el=$("live");let d=null;try{d=JSON.parse(pcs)}catch(e){}
+  {const b=$("gnb");const gn=d&&d.gn;let seen="";try{seen=localStorage.getItem("mxo_gn_seen")||"";}catch(e){}
+   if(gn&&String(gn.t)!==seen){b.textContent=gn.m+" — дарж арилгана";b.classList.remove("hide");b.onclick=()=>{try{localStorage.setItem("mxo_gn_seen",String(gn.t));}catch(e){}b.classList.add("hide");};
+     if(window.__gnT!==gn.t){window.__gnT=gn.t;try{navigator.vibrate&&navigator.vibrate([250,100,250,100,400]);}catch(e){}toast(gn.m);}}
+   else if(!(gn&&String(gn.t)!==seen))b.classList.add("hide");}
   window.__exDone=(cmds||[]).some(c=>c.kind==="act"&&c.status==="done"&&/"(export|render)"/.test(c.body));
   if(!online){el.className="live off";el.innerHTML='<div class="lt">⚠ Компьютер холбогдоогүй</div><div class="lmeta">MXO хаалттай, компьютер унтарсан/sleep хийсэн эсвэл интернэтгүй байж магадгүй. Холбогдоход автоматаар шинэчлэгдэнэ.</div>';return;}
   if(!d){el.className="live ok";el.innerHTML='<div class="lt" style="color:var(--ok)">✓ Компьютер асаалттай</div>'+(pcs?'<div class="lmeta">'+esc(pcs)+'</div>':"");return;}
