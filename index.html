@@ -67,6 +67,8 @@ label.ck{display:flex;align-items:center;gap:8px;font-size:14px}label.ck input{w
   <div id="live" class="live off"><div class="lt">…</div></div>
   <div class="sec"><h3>🔗 ВИДЕОНЫ ЛИНК</h3>
    <div class="row"><input id="url" placeholder="https://youtu.be/…"></div>
+   <div class="row" style="margin-top:8px"><button id="bQ" style="flex:1">🔍 Чанар харах</button></div>
+   <div id="dq" class="hide" style="margin-top:8px"><div class="hint" id="dqT"></div><div class="row"><select id="dqS"></select></div><div class="row" style="margin-top:8px"><button class="pri" id="dqGo">⬇ Энэ чанараар татах</button></div></div>
    <div class="row" style="margin-top:8px"><button class="pri" id="bDl" style="flex:2">⬇ Зөвхөн татах</button><button id="bUrl" style="flex:1" title="Татах → орчуулах → хоолой → экспорт бүгд автоматаар">Бүгдийг автомат</button></div></div>
   <div class="sec"><h3>🌐 ЯРИАНЫ ХЭЛ (видеон дээрх)</h3>
    <div class="row"><select id="lg"><option>Хятад (zh)</option><option>Хятад уламжлалт (zh-tw)</option><option>Англи (en)</option><option>Япон (ja)</option><option>Солонгос (ko)</option><option>Орос (ru)</option><option>Герман (de)</option><option>Франц (fr)</option><option>Испани (es)</option><option>Автомат (auto)</option></select></div>
@@ -138,6 +140,8 @@ function label(c){
   if(c.kind==="act"){let a={};try{a=JSON.parse(c.body)}catch(e){}
     const M={tt:"Орчуулга",gender:"Хүйс ялгах",tts:"Хоолой үүсгэх"};
     if(a.a==="run")return "▶ "+(M[a.step]||a.step);
+    if(a.a==="dl_probe")return "🔍 Чанар шалгах";
+    if(a.a==="dl_pick")return "⬇ Сонгосон чанараар татах";
     if(a.a==="set_lang")return "🌐 Хэл: "+a.v;
     if(a.a==="gem_test")return "🧪 Gemini шалгах";
     if(a.a==="gem_watch")return a.on?"🔁 Gemini хяналт эхлэв":"⏹ Gemini хяналт зогслоо";
@@ -172,6 +176,7 @@ function newStart(){
 function renderLive(online,pcs,cmds){
   const el=$("live");let d=null;try{d=JSON.parse(pcs)}catch(e){}
   {if(d&&d.cut){cRange(d.cut.dur);if(!cDirty){$("cOn").checked=!!d.cut.on;$("cS").value=Math.min(d.cut.s,+$("cS").max);$("cE").value=Math.min(d.cut.e,+$("cE").max);}cShow();}}
+  dqRender(d&&d.dq);
   {const lg=$("lg");if(lg&&d&&d.lg&&document.activeElement!==lg&&lg.value!==d.lg)lg.value=d.lg;}
   {const w=$("gwS");if(w&&d)w.textContent=d.gw?"🔁 Хяналт асаалттай — 10 минут тутам шалгаж байна.":"Хяна: 10 минут тутам шалгаад, хэвийн болмогц энд мэдэгдэнэ.";}
   lastRaw.gn=d&&d.gn||null;
@@ -260,6 +265,15 @@ async function send(kind,body,okMsg){
 document.querySelectorAll("button[data-a]").forEach(b=>b.onclick=()=>send("act",b.dataset.a,"Илгээлээ"));
 $("bSpd").onclick=()=>send("act",JSON.stringify({a:"speed_all",pct:parseInt($("spd").value,10)}),"Илгээлээ");
 $("lg").onchange=()=>send("act",JSON.stringify({a:"set_lang",v:$("lg").value}),"Хэл солигдлоо");
+$("bQ").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}$("dqT").textContent="Чанарын жагсаалт авч байна…";$("dq").classList.remove("hide");$("dqS").innerHTML="";$("dqGo").disabled=true;await send("act",JSON.stringify({a:"dl_probe",url:u}),"Чанар шалгаж байна");};
+$("dqGo").onclick=async()=>{const i=+$("dqS").value;if(await send("act",JSON.stringify({a:"dl_pick",i:i}),"Татаж эхэллээ")){$("dq").classList.add("hide");dqSig="";$("url").value="";}};
+let dqSig="";
+function dqRender(q){const b=$("dq");if(!q){if(!b.classList.contains("hide")&&dqSig!=="")b.classList.add("hide");dqSig="";return;}
+  b.classList.remove("hide");
+  if(q.s==="ok"){const sig=q.u+"|"+q.o.join(",");if(sig!==dqSig){dqSig=sig;const sel=$("dqS");sel.innerHTML="";q.o.forEach((l,i)=>{const o=document.createElement("option");o.value=i;o.textContent=l;sel.appendChild(o);});sel.value=q.b;}
+    $("dqT").textContent=(q.t?q.t+" · ":"")+(q.d?q.d+" · ":"")+q.o.length+" чанар";$("dqGo").disabled=false;}
+  else if(q.s==="err"){dqSig="";$("dqT").textContent="⚠ "+(q.e||"Чанарын жагсаалт авч чадсангүй");$("dqS").innerHTML="";$("dqGo").disabled=true;}
+  else{dqSig="";$("dqT").textContent=q.m||"Чанарын жагсаалт авч байна…";$("dqS").innerHTML="";$("dqGo").disabled=true;}}
 $("bDl").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}if(await send("act",JSON.stringify({a:"download",url:u}),"Татаж эхэллээ"))$("url").value="";};
 const LSV="mxo_phone_vol";
 function volLoad(){try{const o=JSON.parse(localStorage.getItem(LSV)||"{}");if(typeof o.tv==="number")$("tv").value=o.tv;if(typeof o.ov==="number")$("ov").value=o.ov;if(o.rm)$("rm").value=o.rm;if(o.fm)$("fm").value=o.fm;}catch(e){}volShow();}
