@@ -38,6 +38,7 @@ form{display:flex;gap:8px;padding:8px 12px calc(10px + env(safe-area-inset-botto
 .live.run{border-color:#5b8cff55;box-shadow:0 0 0 1px #5b8cff22 inset}.live.ok{border-color:#24503d}.live.off{border-color:#6b4a2c}
 .lt{display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px}
 .spin{width:14px;height:14px;border:2px solid #5b8cff55;border-top-color:var(--ac);border-radius:50%;animation:sp 1s linear infinite;flex:none}@keyframes sp{to{transform:rotate(360deg)}}
+.bar.ind i{width:35%!important;animation:ind 1.2s ease-in-out infinite alternate}@keyframes ind{from{margin-left:0}to{margin-left:65%}}
 .bar{height:10px;background:#0c0e13;border-radius:6px;margin:10px 0 6px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#5b8cff,#7aa5ff);border-radius:6px;transition:width .6s}
 .lrow{display:flex;justify-content:space-between;color:var(--mu);font-size:13px}.lrow b{color:var(--tx)}
 .lmeta{color:var(--mu);font-size:12.5px;margin-top:8px;word-break:break-word}
@@ -152,6 +153,13 @@ function label(c){
   return c.body;}
 
 let logOpen=null,prevSt={},primed=false;
+function mbs(b){return b>=1073741824?(b/1073741824).toFixed(2)+" GB":(b/1048576).toFixed(1)+" MB";}
+function dlHtml(dl){let o="";for(const x of (dl||[])){
+  if(x.run){o+='<div class="lt"><span class="spin"></span>⬇ Видео татаж байна</div><div class="lmeta">'+esc(x.n)+'</div><div class="bar'+(x.pct<1&&!x.tot?" ind":"")+'"><i style="width:'+Math.max(2,x.pct)+'%"></i></div>'+
+    '<div class="lrow"><b>'+x.pct+'%</b><span>'+esc([x.sp,x.tot?mbs(x.dn)+" / "+mbs(x.tot):"",x.eta?"⏱ "+x.eta:""].filter(Boolean).join(" · "))+'</span></div>';}
+  else if(x.done)o+='<div class="lt" style="color:var(--ok)">✓ Видео татагдлаа</div><div class="lmeta">'+esc(x.n)+'</div>';
+  else o+='<div class="lt" style="color:var(--er)">✗ Татах алдаа</div><div class="lmeta">'+esc(x.n+(x.err?" — "+x.err:""))+'</div>';}
+  return o;}
 function stepsHtml(d){
   const cur=d.cur==="transcribe"||d.cur==="translate"?"tt":(d.cur||"");
   const ex=window.__exDone;
@@ -187,16 +195,18 @@ function renderLive(online,pcs,cmds){
   window.__exDone=(cmds||[]).some(c=>c.kind==="act"&&c.status==="done"&&/"(export|render)"/.test(c.body));
   if(!online){el.className="live off";el.innerHTML='<div class="lt">⚠ Компьютер холбогдоогүй</div><div class="lmeta">MXO хаалттай, компьютер унтарсан/sleep хийсэн эсвэл интернэтгүй байж магадгүй. Холбогдоход автоматаар шинэчлэгдэнэ.</div>';return;}
   if(!d){el.className="live ok";el.innerHTML='<div class="lt" style="color:var(--ok)">✓ Компьютер асаалттай</div>'+(pcs?'<div class="lmeta">'+esc(pcs)+'</div>':"");return;}
-  const run=!!d.busy||!!d.pl;
+  const dlRun=(d.dl||[]).some(x=>x.run);
+  const run=!!d.busy||!!d.pl||dlRun;
   if(logOpen===null)logOpen=run;
-  let h="";
-  if(run){
+  let h=dlHtml(d.dl);
+  if(d.busy||d.pl){
     const title=d.pl?('Автомат цуваа '+d.pl.n+'/'+d.pl.of+' · '+d.pl.name):(CUR[d.cur]||"Ажиллаж байна");
     const pct=Math.max(0,Math.min(100,Number(d.pct)||0));
-    h+='<div class="lt"><span class="spin"></span>'+esc(title)+'</div><div class="bar"><i style="width:'+pct+'%"></i></div>';
+    const isEx=d.cur==="export";
+    h+='<div class="lt"><span class="spin"></span>'+(isEx?"🎬 Рендер хийж байна":esc(title))+'</div><div class="bar'+(pct<1?" ind":"")+'"><i style="width:'+Math.max(pct,2)+'%"></i></div>';
     h+='<div class="lrow"><b>'+Math.round(pct)+'%</b><span>'+esc((d.eta||"").replace(/^⏱\s*/,"")?("⏱ "+(d.eta||"").replace(/^⏱\s*/,"")):"")+'</span></div>';
     const sm=(d.pl&&d.pl.msg)||d.status;if(sm)h+='<div class="lmeta">'+esc(sm)+'</div>';
-  }else{
+  }else if(!dlRun){
     h+='<div class="lt" style="color:var(--ok)">✓ Бэлэн — ажил явахгүй байна</div>';
     if(d.status)h+='<div class="lmeta">'+esc(d.status)+'</div>';
   }
