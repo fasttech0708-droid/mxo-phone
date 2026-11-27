@@ -69,7 +69,7 @@ label.ck{display:flex;align-items:center;gap:8px;font-size:14px}label.ck input{w
   <div class="sec"><h3>🔗 ВИДЕОНЫ ЛИНК</h3>
    <div class="row"><input id="url" placeholder="https://youtu.be/…"></div>
    <div class="row" style="margin-top:8px"><button id="bQ" style="flex:1">🔍 Чанар харах</button></div>
-   <div id="dq" class="hide" style="margin-top:8px"><div class="hint" id="dqT"></div><div class="row"><select id="dqS"></select></div><div class="row" style="margin-top:8px"><button class="pri" id="dqGo">⬇ Энэ чанараар татах</button></div></div>
+   <div id="dq" class="hide" style="margin-top:8px"><div class="hint" id="dqT"></div><div class="row"><select id="dqS"></select></div><div class="hint" id="dqLT" style="display:none">🎧 Дууны хэл:</div><div class="row"><select id="dqL" style="display:none"></select></div><div class="row" style="margin-top:8px"><button class="pri" id="dqGo">⬇ Энэ чанараар татах</button></div></div>
    <div class="row" style="margin-top:8px"><button class="pri" id="bDl" style="flex:2">⬇ Зөвхөн татах</button><button id="bUrl" style="flex:1" title="Татах → орчуулах → хоолой → экспорт бүгд автоматаар">Бүгдийг автомат</button></div></div>
   <div class="sec"><h3>🌐 ЯРИАНЫ ХЭЛ (видеон дээрх)</h3>
    <div class="row"><select id="lg"><option>Хятад (zh)</option><option>Хятад уламжлалт (zh-tw)</option><option>Англи (en)</option><option>Япон (ja)</option><option>Солонгос (ko)</option><option>Орос (ru)</option><option>Герман (de)</option><option>Франц (fr)</option><option>Испани (es)</option><option>Автомат (auto)</option></select></div>
@@ -276,11 +276,11 @@ document.querySelectorAll("button[data-a]").forEach(b=>b.onclick=()=>send("act",
 $("bSpd").onclick=()=>send("act",JSON.stringify({a:"speed_all",pct:parseInt($("spd").value,10)}),"Илгээлээ");
 $("lg").onchange=()=>send("act",JSON.stringify({a:"set_lang",v:$("lg").value}),"Хэл солигдлоо");
 $("bQ").onclick=async()=>{const u=$("url").value.trim();if(!u)return;if(!VID.test(u)){toast("Дэмжигдэх видео сайтын линк оруулна уу");return;}$("dqT").textContent="Чанарын жагсаалт авч байна…";$("dq").classList.remove("hide");$("dqS").innerHTML="";$("dqGo").disabled=true;await send("act",JSON.stringify({a:"dl_probe",url:u}),"Чанар шалгаж байна");};
-$("dqGo").onclick=async()=>{const i=+$("dqS").value;if(await send("act",JSON.stringify({a:"dl_pick",i:i}),"Татаж эхэллээ")){$("dq").classList.add("hide");dqSig="";$("url").value="";}};
+$("dqGo").onclick=async()=>{const i=+$("dqS").value;const L=$("dqL");const pl={a:"dl_pick",i:i};if(L.style.display!=="none")pl.l=+L.value;if(await send("act",JSON.stringify(pl),"Татаж эхэллээ")){$("dq").classList.add("hide");dqSig="";$("url").value="";}};
 let dqSig="";
 function dqRender(q){const b=$("dq");if(!q){if(!b.classList.contains("hide")&&dqSig!=="")b.classList.add("hide");dqSig="";return;}
   b.classList.remove("hide");
-  if(q.s==="ok"){const sig=q.u+"|"+q.o.join(",");if(sig!==dqSig){dqSig=sig;const sel=$("dqS");sel.innerHTML="";q.o.forEach((l,i)=>{const o=document.createElement("option");o.value=i;o.textContent=l;sel.appendChild(o);});sel.value=q.b;}
+  if(q.s==="ok"){const sig=q.u+"|"+q.o.join(",");if(sig!==dqSig){dqSig=sig;const sel=$("dqS");sel.innerHTML="";q.o.forEach((l,i)=>{const o=document.createElement("option");o.value=i;o.textContent=l;sel.appendChild(o);});sel.value=q.b;const L=$("dqL"),LT=$("dqLT");L.innerHTML="";const gl=q.gl||[];if(gl.length){gl.forEach((l,i)=>{const o=document.createElement("option");o.value=i;o.textContent=l;L.appendChild(o);});L.style.display="";LT.style.display="";}else{L.style.display="none";LT.style.display="none";}}
     $("dqT").textContent=(q.t?q.t+" · ":"")+(q.d?q.d+" · ":"")+q.o.length+" чанар";$("dqGo").disabled=false;}
   else if(q.s==="err"){dqSig="";$("dqT").textContent="⚠ "+(q.e||"Чанарын жагсаалт авч чадсангүй");$("dqS").innerHTML="";$("dqGo").disabled=true;}
   else{dqSig="";$("dqT").textContent=q.m||"Чанарын жагсаалт авч байна…";$("dqS").innerHTML="";$("dqGo").disabled=true;}}
